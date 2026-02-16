@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; }
+        .chart-container { width: 80%; max-width: 900px; }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="pollChart"></canvas>
+    </div>
+
+    <script>
+        const socket = io();
+        const ctx = document.getElementById('pollChart').getContext('2d');
+        
+        // Initialize an empty chart
+        let pollChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['The Welcome Packet', 'Personal Phone Call', 'Impact Video', 'Handwritten Note'],
+                datasets: [{
+                    label: 'Live Votes',
+                    data: [0, 0, 0, 0],
+                    backgroundColor: '#0056b3',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                animation: { duration: 500 }
+            }
+        });
+
+        // Listen for updates from the server and redraw the chart
+        socket.on('update_chart', function(data) {
+            pollChart.data.labels = Object.keys(data);
+            pollChart.data.datasets[0].data = Object.values(data);
+            pollChart.update();
+        });
+    </script>
+</body>
+</html>
