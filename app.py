@@ -9,7 +9,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # AFP Brand Colors
 AFP_NAVY = "#003087"
 AFP_GOLD = "#FFCD00"
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 # Four sequential polls based on presentation "From First Gift to Forever"
 POLLS = [
