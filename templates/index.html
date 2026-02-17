@@ -6,16 +6,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; text-align: center; padding: 20px; background: #f4f4f9; }
-        h2 { color: #333; }
+        h2 { color: #333; margin-bottom: 30px; }
         .btn { display: block; width: 100%; max-width: 300px; margin: 10px auto; padding: 15px; font-size: 18px; color: white; background: #0056b3; border: none; border-radius: 8px; cursor: pointer; }
         .btn:active { background: #003d82; }
-        #thanks { display: none; margin-top: 20px; font-weight: bold; color: #28a745; }
+        #thanks { display: none; margin-top: 20px; font-size: 20px; font-weight: bold; color: #28a745; }
     </style>
 </head>
 <body>
-    <h2>What is the most critical post-gift touchpoint?</h2>
+    <h2>{{ poll_data.question }}</h2>
     
-    {% for option in poll_data.keys() %}
+    {% for option in poll_data.options.keys() %}
         <button class="btn" onclick="sendVote('{{ option }}')">{{ option }}</button>
     {% endfor %}
 
@@ -23,10 +23,10 @@
 
     <script>
         const socket = io();
+        const currentPollId = "{{ poll_id }}";
 
         function sendVote(choice) {
-            socket.emit('submit_vote', { choice: choice });
-            // Hide buttons and show thank you message
+            socket.emit('submit_vote', { poll_id: currentPollId, choice: choice });
             document.querySelectorAll('.btn').forEach(b => b.style.display = 'none');
             document.getElementById('thanks').style.display = 'block';
         }
