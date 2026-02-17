@@ -6,6 +6,7 @@
     <title>AFP Live Results | Presenter View</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -428,7 +429,7 @@
             </div>
 
             <div class="qr-section">
-                <div class="qr-code">
+                <div class="qr-code" id="qrCode">
                     <div class="qr-placeholder">
                         📱<br><br>
                         Scan to Vote<br>
@@ -449,6 +450,32 @@
         
         // Set poll URL
         document.getElementById('pollUrl').textContent = window.location.origin;
+        // Render QR code (audience URL)
+        (function renderQR() {
+            const audienceUrl = window.location.origin;
+            const qrEl = document.getElementById('qrCode');
+            if (!qrEl) return;
+        
+            // Clear placeholder
+            qrEl.innerHTML = "";
+        
+            if (window.QRCode) {
+                try {
+                    new QRCode(qrEl, {
+                        text: audienceUrl,
+                        width: 180,
+                        height: 180,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (e) {
+                    qrEl.innerHTML = `<div class="qr-placeholder">QR failed.<br><small>Use the URL below.</small></div>`;
+                    console.error("QR render error:", e);
+                }
+            } else {
+                qrEl.innerHTML = `<div class="qr-placeholder">QR unavailable.<br><small>Use the URL below.</small></div>`;
+                console.error("QRCode library did not load.");
+            }
+        })();
 
         // Initialize chart
         const ctx = document.getElementById('pollChart').getContext('2d');
