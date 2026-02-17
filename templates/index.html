@@ -1,71 +1,321 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Live Poll</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFP Live Poll | From First Gift to Forever</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Montserrat', sans-serif; 
-            text-align: center; 
-            padding: 30px 20px; 
-            background: #ffffff; 
-            color: #000000;
+        :root {
+            --afp-navy: #003087;
+            --afp-navy-dark: #002266;
+            --afp-navy-light: #0047b3;
+            --afp-gold: #FFCD00;
+            --afp-gold-dark: #e6b800;
+            --afp-white: #FFFFFF;
+            --afp-gray: #F5F5F5;
+            --afp-text: #333333;
         }
-        h2 { 
-            font-weight: 700; 
-            margin-bottom: 40px; 
-            font-size: 24px;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .btn { 
-            display: block; 
-            width: 100%; 
-            max-width: 350px; 
-            margin: 15px auto; 
-            padding: 18px; 
-            font-size: 16px; 
-            font-family: 'Montserrat', sans-serif;
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--afp-navy) 0%, var(--afp-navy-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--afp-white);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .afp-logo {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--afp-gold);
+            margin-bottom: 10px;
+        }
+
+        .session-title {
+            font-size: 12px;
             font-weight: 600;
-            color: #ffffff; 
-            background: #0B1340; /* AFP Navy Blue */
-            border: 2px solid #0B1340; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-bottom: 20px;
         }
-        .btn:active { 
-            background: #F7C822; /* AFP Sunburst Gold */
-            color: #0B1340; 
-            border-color: #F7C822; 
+
+        .poll-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
-        #thanks { 
-            display: none; 
-            margin-top: 40px; 
-            font-size: 22px; 
-            font-weight: 700; 
-            color: #0B1340; 
+
+        .poll-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .poll-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .poll-dot.active {
+            background: var(--afp-gold);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--afp-white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .question {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--afp-navy);
+            line-height: 1.4;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--afp-navy);
+            background: var(--afp-white);
+            border: 2px solid var(--afp-navy);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: var(--afp-navy);
+            color: var(--afp-white);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 48, 135, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--afp-gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--afp-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-icon::after {
+            content: '✓';
+            font-size: 40px;
+            color: var(--afp-navy);
+            font-weight: 700;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--afp-navy);
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: var(--afp-text);
+            line-height: 1.6;
+        }
+
+        .success-message strong {
+            color: var(--afp-navy);
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+            }
+            
+            .question {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 16px 18px;
+                font-size: 15px;
+            }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
-    <h2>{{ poll_data.question }}</h2>
-    
-    {% for option in poll_data.options.keys() %}
-        <button class="btn" onclick="sendVote('{{ option }}')">{{ option }}</button>
-    {% endfor %}
+    <div class="header">
+        <div class="afp-logo">Association of Fundraising Professionals</div>
+        <div class="session-title">From First Gift to Forever</div>
+        <div class="poll-indicator">
+            <span>Poll {{ poll_number }} of {{ total_polls }}</span>
+            <div class="poll-dots">
+                {% for i in range(total_polls) %}
+                <div class="poll-dot {% if i + 1 == poll_number %}active{% endif %}"></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-    <p id="thanks">Vote recorded!<br><span style="font-size: 16px; font-weight: 400;">Look at the screen.</span></p>
+    <div class="container" id="votingContainer">
+        <h1 class="question">{{ poll.question }}</h1>
+        <div class="options" id="optionsContainer">
+            {% for option in poll.options %}
+            <button class="btn" onclick="submitVote('{{ option|replace("'", "\\'") }}')">{{ option }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="success-screen" id="successScreen">
+        <div class="success-icon"></div>
+        <h2 class="success-title">Vote Recorded!</h2>
+        <p class="success-message">
+            Thank you for participating.<br>
+            <strong>Watch the screen</strong> to see live results!
+        </p>
+    </div>
+
+    <div class="footer">
+        AFP ICON 2025 • Leveraging AI for the Future
+    </div>
 
     <script>
         const socket = io();
-        const currentPollId = "{{ poll_id }}";
+        const pollId = {{ poll.id }};
+        let hasVoted = false;
 
-        function sendVote(choice) {
-            socket.emit('submit_vote', { poll_id: currentPollId, choice: choice });
-            document.querySelectorAll('.btn').forEach(b => b.style.display = 'none');
-            document.getElementById('thanks').style.display = 'block';
+        function submitVote(choice) {
+            if (hasVoted) return;
+            
+            socket.emit('submit_vote', { 
+                choice: choice,
+                poll_id: pollId
+            });
         }
+
+        socket.on('vote_confirmed', function(data) {
+            hasVoted = true;
+            document.getElementById('votingContainer').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+        });
+
+        socket.on('vote_error', function(data) {
+            alert(data.message);
+        });
+
+        // Handle poll changes - refresh page to show new poll
+        socket.on('poll_changed', function(data) {
+            if (data.poll.id !== pollId) {
+                window.location.reload();
+            }
+        });
+
+        // Check for poll updates periodically
+        setInterval(() => {
+            fetch('/api/current-poll')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.poll.id !== pollId) {
+                        window.location.reload();
+                    }
+                });
+        }, 3000);
     </script>
 </body>
 </html>
