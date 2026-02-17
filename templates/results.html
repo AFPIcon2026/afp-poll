@@ -5,42 +5,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; }
+        body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; }
+        h1 { color: #333; margin-bottom: 20px; text-align: center; }
         .chart-container { width: 80%; max-width: 900px; }
     </style>
 </head>
 <body>
+    <h1>{{ poll_data.question }}</h1>
     <div class="chart-container">
         <canvas id="pollChart"></canvas>
     </div>
 
     <script>
         const socket = io();
+        const currentPollId = "{{ poll_id }}";
         const ctx = document.getElementById('pollChart').getContext('2d');
         
-        // Initialize an empty chart
+        const initialLabels = {{ poll_data.options.keys() | list | tojson }};
+        const initialData = {{ poll_data.options.values() | list | tojson }};
+
         let pollChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['The Welcome Packet', 'Personal Phone Call', 'Impact Video', 'Handwritten Note'],
+                labels: initialLabels,
                 datasets: [{
                     label: 'Live Votes',
-                    data: [0, 0, 0, 0],
+                    data: initialData,
                     backgroundColor: '#0056b3',
                     borderRadius: 5
                 }]
             },
             options: {
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-                animation: { duration: 500 }
+                animation: { duration: 500 },
+                plugins: { legend: { display: false } }
             }
         });
 
-        // Listen for updates from the server and redraw the chart
         socket.on('update_chart', function(data) {
-            pollChart.data.labels = Object.keys(data);
-            pollChart.data.datasets[0].data = Object.values(data);
-            pollChart.update();
+            // Only update the chart if the vote belongs to this specific poll
+            if (data.poll_id === currentPollId) {
+                pollChart.data.labels = Object.keys(data.data);
+                pollChart.data.datasets[0].data = Object.values(data.data);
+                pollChart.update();
+            }
         });
     </script>
 </body>
