@@ -10,7 +10,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 AFP_NAVY = "#003087"
 AFP_GOLD = "#FFCD00"
 
-# Four sequential polls based on presentation "From First Gift to Forever"
+# Five sequential polls based on presentation "From First Gift to Forever"
 POLLS = [
     {
         "id": 1,
@@ -24,6 +24,16 @@ POLLS = [
     },
     {
         "id": 2,
+        "question": "Which AI tool does your organization currently allow?",
+        "options": [
+            "ChatGPT (OpenAI)",
+            "Claude (Anthropic)",
+            "Gemini (Google)",
+            "None — IT hasn't approved anything yet"
+        ]
+    },
+    {
+        "id": 3,
         "question": "What stewardship task do you KNOW works but often skip because it takes too long?",
         "options": [
             "Personalized handwritten notes",
@@ -33,7 +43,7 @@ POLLS = [
         ]
     },
     {
-        "id": 3,
+        "id": 4,
         "question": "How are you currently using AI in your fundraising work?",
         "options": [
             "Drafting donor communications",
@@ -43,7 +53,7 @@ POLLS = [
         ]
     },
     {
-        "id": 4,
+        "id": 5,
         "question": "What's your first move Monday morning?",
         "options": [
             "Choose 3 high-potential donors to engage",
@@ -61,7 +71,7 @@ current_poll_index = 0
 @app.route('/')
 def audience():
     """Audience voting view - shows current active poll"""
-    return render_template('index.html', 
+    return render_template('index.html',
                          poll=POLLS[current_poll_index],
                          poll_number=current_poll_index + 1,
                          total_polls=len(POLLS))
@@ -99,12 +109,12 @@ def handle_vote(data):
     global current_poll_index
     choice = data.get('choice')
     poll_id = data.get('poll_id')
-    
+
     # Validate the poll is still active
     if poll_id != POLLS[current_poll_index]["id"]:
         emit('vote_error', {'message': 'This poll is no longer active'})
         return
-    
+
     if choice in poll_votes[poll_id]:
         poll_votes[poll_id][choice] += 1
         # Broadcast updated results to all clients
@@ -120,7 +130,7 @@ def handle_change_poll(data):
     """Presenter control to change active poll"""
     global current_poll_index
     action = data.get('action')
-    
+
     if action == 'next' and current_poll_index < len(POLLS) - 1:
         current_poll_index += 1
     elif action == 'prev' and current_poll_index > 0:
@@ -134,7 +144,7 @@ def handle_change_poll(data):
         for poll in POLLS:
             poll_votes[poll["id"]] = {opt: 0 for opt in poll["options"]}
         current_poll_index = 0
-    
+
     # Broadcast poll change to all clients
     emit('poll_changed', {
         'poll': POLLS[current_poll_index],
