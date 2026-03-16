@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFP Live Results | Presenter View</title>
+    <title>AFP Live Poll | From First Gift to Forever</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -30,341 +28,213 @@
             font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, var(--afp-navy) 0%, var(--afp-navy-dark) 100%);
             min-height: 100vh;
-            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
             color: var(--afp-white);
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
+            width: 100%;
         }
 
         .afp-logo {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--afp-gold);
             margin-bottom: 10px;
         }
 
         .session-title {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-
-        .session-subtitle {
-            font-size: 16px;
-            font-weight: 600;
-            opacity: 0.9;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 30px;
-        }
-
-        .chart-section {
-            background: var(--afp-white);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .poll-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid var(--afp-gold);
-        }
-
-        .poll-number {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--afp-navy);
-            background: var(--afp-gold);
-            padding: 8px 16px;
-            border-radius: 20px;
-        }
-
-        .poll-question {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111827;
-            flex: 1;
-            margin-left: 20px;
-            line-height: 1.4;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-        }
-
-        .stats-bar {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid #eee;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--afp-navy);
-        }
-
-        .stat-label {
             font-size: 12px;
             font-weight: 600;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 5px;
-        }
-
-        .controls-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .control-panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 20px;
-            color: var(--afp-gold);
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
+            text-transform: uppercase;
+            opacity: 0.9;
             margin-bottom: 20px;
         }
 
-        .nav-btn {
-            flex: 1;
-            padding: 15px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .nav-btn.primary {
-            background: var(--afp-gold);
-            color: var(--afp-navy);
-        }
-
-        .nav-btn.primary:hover {
-            background: var(--afp-gold-dark);
-            transform: translateY(-2px);
-        }
-
-        .nav-btn.secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--afp-white);
-        }
-
-        .nav-btn.secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .reset-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .reset-btn {
-            padding: 12px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 12px;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: transparent;
-            color: var(--afp-white);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .reset-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--afp-gold);
-        }
-
-        .poll-list {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .poll-item {
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .poll-item.active {
-            background: rgba(255, 205, 0, 0.2);
-            border-left-color: var(--afp-gold);
-        }
-
-        .poll-item.completed {
-            border-left-color: #28a745;
-        }
-
-        .poll-item-number {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--afp-gold);
-            margin-bottom: 5px;
-        }
-
-        .poll-item-question {
-            font-size: 13px;
-            line-height: 1.4;
-            opacity: 0.9;
-        }
-
-        .qr-section {
-            background: var(--afp-white);
-            border-radius: 16px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .qr-code {
-            width: 180px;
-            height: 180px;
-            background: var(--afp-navy);
-            border-radius: 10px;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .qr-placeholder {
-            font-size: 12px;
-            color: var(--afp-white);
-            text-align: center;
-            padding: 20px;
-        }
-
-        .qr-label {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--afp-navy);
-        }
-
-        .url-display {
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
-            word-break: break-all;
-        }
-
-        .live-indicator {
+        .poll-indicator {
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .poll-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .poll-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .poll-dot.active {
+            background: var(--afp-gold);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--afp-white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .question {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1.4;
+            margin-bottom: 25px;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
             font-weight: 700;
-            color: #28a745;
-            text-transform: uppercase;
+            color: #111827;
+            background: var(--afp-white);
+            border: 2.5px solid #111827;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: #111827;
+            color: var(--afp-white);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--afp-gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--afp-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-icon::after {
+            content: '✓';
+            font-size: 40px;
+            color: var(--afp-navy);
+            font-weight: 700;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .success-message strong {
+            color: #111827;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.7;
             letter-spacing: 1px;
         }
 
-        .live-dot {
-            width: 10px;
-            height: 10px;
-            background: #28a745;
-            border-radius: 50%;
-            animation: blink 1s infinite;
+        .pulse {
+            animation: pulse 2s infinite;
         }
 
-        @keyframes blink {
+        @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50% { opacity: 0.7; }
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
             }
             
-            .controls-section {
-                flex-direction: row;
-                flex-wrap: wrap;
+            .question {
+                font-size: 20px;
             }
             
-            .control-panel, .poll-list, .qr-section {
-                flex: 1;
-                min-width: 250px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-            
-            .session-title {
-                font-size: 24px;
-            }
-            
-            .chart-section {
-                padding: 25px;
-            }
-            
-            .poll-question {
-                font-size: 18px;
+            .btn {
+                padding: 16px 18px;
+                font-size: 15px;
             }
         }
     </style>
@@ -373,247 +243,80 @@
 <body>
     <div class="header">
         <div class="afp-logo">Association of Fundraising Professionals</div>
-        <h1 class="session-title">From First Gift to Forever</h1>
-        <p class="session-subtitle">Live Polling Results</p>
-    </div>
-
-    <div class="main-container">
-        <div class="chart-section">
-            <div class="poll-header">
-                <span class="poll-number">Poll {{ current_poll }} of {{ total_polls }}</span>
-                <h2 class="poll-question" id="pollQuestion">{{ polls[0].question }}</h2>
-            </div>
-            <div class="chart-container">
-                <canvas id="pollChart"></canvas>
-            </div>
-            <div class="stats-bar">
-                <div class="stat">
-                    <div class="stat-value" id="totalVotes">0</div>
-                    <div class="stat-label">Total Votes</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="votePercentage">0%</div>
-                    <div class="stat-label">Participation</div>
-                </div>
-                <div class="stat">
-                    <div class="live-indicator">
-                        <span class="live-dot"></span>
-                        Live
-                    </div>
-                    <div class="stat-label">Real-time Updates</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="controls-section">
-            <div class="control-panel">
-                <h3 class="panel-title">Presenter Controls</h3>
-                <div class="nav-buttons">
-                    <button class="nav-btn secondary" id="prevBtn" onclick="changePoll('prev')">← Prev</button>
-                    <button class="nav-btn primary" id="nextBtn" onclick="changePoll('next')">Next →</button>
-                </div>
-                <div class="reset-buttons">
-                    <button class="reset-btn" onclick="changePoll('reset')">↻ Reset Current Poll</button>
-                    <button class="reset-btn" onclick="changePoll('reset_all')">↻ Reset All Polls</button>
-                </div>
-            </div>
-
-            <div class="poll-list">
-                <h3 class="panel-title">All Polls</h3>
-                {% for poll in polls %}
-                <div class="poll-item {% if loop.index == current_poll %}active{% endif %}" id="pollItem{{ poll.id }}">
-                    <div class="poll-item-number">Poll {{ loop.index }}</div>
-                    <div class="poll-item-question">{{ poll.question }}</div>
-                </div>
+        <div class="session-title">From First Gift to Forever</div>
+        <div class="poll-indicator">
+            <span>Poll {{ poll_number }} of {{ total_polls }}</span>
+            <div class="poll-dots">
+                {% for i in range(total_polls) %}
+                <div class="poll-dot {% if i + 1 == poll_number %}active{% endif %}"></div>
                 {% endfor %}
             </div>
-
-            <div class="qr-section">
-                <div class="qr-code" id="qrCode">
-                    <div class="qr-placeholder">
-                        📱<br><br>
-                        Scan to Vote<br>
-                        <small>Or visit the poll URL</small>
-                    </div>
-                </div>
-                <div class="qr-label">Audience Voting</div>
-                <div class="url-display" id="pollUrl">your-app.onrender.com</div>
-            </div>
         </div>
+    </div>
+
+    <div class="container" id="votingContainer">
+        <h1 class="question">{{ poll.question }}</h1>
+        <div class="options" id="optionsContainer">
+            {% for option in poll.options %}
+            <button class="btn" onclick="submitVote('{{ option|replace("'", "\\'") }}')">{{ option }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="success-screen" id="successScreen">
+        <div class="success-icon"></div>
+        <h2 class="success-title">Vote Recorded!</h2>
+        <p class="success-message">
+            Thank you for participating.<br>
+            <strong>Watch the screen</strong> to see live results!
+        </p>
+    </div>
+
+    <div class="footer">
+        AFP ICON 2026 • Leveraging AI for the Future
     </div>
 
     <script>
         const socket = io();
-        const polls = {{ polls | tojson }};
-        let currentPollIndex = {{ current_poll - 1 }};
-        const estimatedAudience = 125;
-        
-        // Set poll URL
-        document.getElementById('pollUrl').textContent = window.location.origin;
-        // Render QR code (audience URL)
-        (function renderQR() {
-            const audienceUrl = window.location.origin;
-            const qrEl = document.getElementById('qrCode');
-            if (!qrEl) return;
-        
-            // Clear placeholder
-            qrEl.innerHTML = "";
-        
-            if (window.QRCode) {
-                try {
-                    new QRCode(qrEl, {
-                        text: audienceUrl,
-                        width: 180,
-                        height: 180,
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-                } catch (e) {
-                    qrEl.innerHTML = `<div class="qr-placeholder">QR failed.<br><small>Use the URL below.</small></div>`;
-                    console.error("QR render error:", e);
-                }
-            } else {
-                qrEl.innerHTML = `<div class="qr-placeholder">QR unavailable.<br><small>Use the URL below.</small></div>`;
-                console.error("QRCode library did not load.");
-            }
-        })();
+        const pollId = {{ poll.id }};
+        let hasVoted = false;
 
-        // Initialize chart
-        const ctx = document.getElementById('pollChart').getContext('2d');
-        let pollChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: polls[currentPollIndex].options,
-                datasets: [{
-                    label: 'Votes',
-                    data: polls[currentPollIndex].options.map(() => 0),
-                    backgroundColor: polls[currentPollIndex].options.map((_, i) =>
-                        i % 2 === 0 ? '#003087' : '#1a6faf'
-                    ),
-                    borderColor: polls[currentPollIndex].options.map((_, i) =>
-                        i % 2 === 0 ? '#002266' : '#155a91'
-                    ),
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#003087',
-                        titleFont: { family: 'Montserrat', size: 14 },
-                        bodyFont: { family: 'Montserrat', size: 16, weight: 'bold' },
-                        padding: 12,
-                        cornerRadius: 8,
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            font: { family: 'Montserrat', size: 12 },
-                            color: '#666'
-                        },
-                        grid: { color: '#eee' }
-                    },
-                    y: {
-                        ticks: {
-                            font: { family: 'Montserrat', size: 13, weight: '700' },
-                            color: '#111827'
-                        },
-                        grid: { display: false }
-                    }
-                },
-                animation: {
-                    duration: 500,
-                    easing: 'easeOutQuart'
-                }
-            }
-        });
-
-        // Update button states
-        function updateButtons() {
-            document.getElementById('prevBtn').disabled = currentPollIndex === 0;
-            document.getElementById('nextBtn').disabled = currentPollIndex === polls.length - 1;
-        }
-
-        // Update poll list highlighting
-        function updatePollList() {
-            polls.forEach((poll, index) => {
-                const item = document.getElementById(`pollItem${poll.id}`);
-                item.classList.remove('active', 'completed');
-                if (index === currentPollIndex) {
-                    item.classList.add('active');
-                } else if (index < currentPollIndex) {
-                    item.classList.add('completed');
-                }
+        function submitVote(choice) {
+            if (hasVoted) return;
+            
+            socket.emit('submit_vote', { 
+                choice: choice,
+                poll_id: pollId
             });
         }
 
-        // Update stats display
-        function updateStats(votes) {
-            const total = Object.values(votes).reduce((a, b) => a + b, 0);
-            document.getElementById('totalVotes').textContent = total;
-            document.getElementById('votePercentage').textContent = 
-                Math.round((total / estimatedAudience) * 100) + '%';
-        }
-
-        // Change poll handler
-        function changePoll(action) {
-            socket.emit('change_poll', { action: action });
-        }
-
-        // Socket event handlers
-        socket.on('update_chart', function(data) {
-            if (data.poll_id === polls[currentPollIndex].id) {
-                pollChart.data.datasets[0].data = Object.values(data.votes);
-                pollChart.update();
-                updateStats(data.votes);
-            }
+        socket.on('vote_confirmed', function(data) {
+            hasVoted = true;
+            document.getElementById('votingContainer').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
         });
 
+        socket.on('vote_error', function(data) {
+            alert(data.message);
+        });
+
+        // Handle poll changes - refresh page to show new poll
         socket.on('poll_changed', function(data) {
-            currentPollIndex = data.poll_number - 1;
-            
-            // Update question
-            document.getElementById('pollQuestion').textContent = data.poll.question;
-            document.querySelector('.poll-number').textContent = 
-                `Poll ${data.poll_number} of ${data.total_polls}`;
-            
-            // Update chart
-            pollChart.data.labels = data.poll.options;
-            pollChart.data.datasets[0].data = Object.values(data.votes);
-            pollChart.data.datasets[0].backgroundColor = data.poll.options.map((_, i) =>
-                i % 2 === 0 ? '#003087' : '#1a6faf'
-            );
-            pollChart.data.datasets[0].borderColor = data.poll.options.map((_, i) =>
-                i % 2 === 0 ? '#002266' : '#155a91'
-            );
-            pollChart.update();
-            
-            // Update UI
-            updateStats(data.votes);
-            updateButtons();
-            updatePollList();
+            if (data.poll.id !== pollId) {
+                window.location.reload();
+            }
         });
 
-        // Initial setup
-        updateButtons();
-        updatePollList();
-        
-        // Fetch initial data
-        fetch('/api/current-poll')
-            .then(res => res.json())
-            .then(data => {
-                pollChart.data.datasets[0].data = Object.values(data.votes);
-                pollChart.update();
-                updateStats(data.votes);
-            });
+        // Check for poll updates periodically
+        setInterval(() => {
+            fetch('/api/current-poll')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.poll.id !== pollId) {
+                        window.location.reload();
+                    }
+                });
+        }, 3000);
     </script>
 </body>
 </html>
