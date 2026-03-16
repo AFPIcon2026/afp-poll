@@ -98,7 +98,7 @@
         .poll-question {
             font-size: 24px;
             font-weight: 700;
-            color: var(--afp-navy);
+            color: #111827;
             flex: 1;
             margin-left: 20px;
             line-height: 1.4;
@@ -486,11 +486,11 @@
                 datasets: [{
                     label: 'Votes',
                     data: polls[currentPollIndex].options.map(() => 0),
-                    backgroundColor: polls[currentPollIndex].options.map((_, i) => 
-                        i % 2 === 0 ? '#003087' : '#FFCD00'
+                    backgroundColor: polls[currentPollIndex].options.map((_, i) =>
+                        i % 2 === 0 ? '#003087' : '#1a6faf'
                     ),
-                    borderColor: polls[currentPollIndex].options.map((_, i) => 
-                        i % 2 === 0 ? '#003087' : '#e6b800'
+                    borderColor: polls[currentPollIndex].options.map((_, i) =>
+                        i % 2 === 0 ? '#002266' : '#155a91'
                     ),
                     borderWidth: 2,
                     borderRadius: 8,
@@ -523,8 +523,8 @@
                     },
                     y: {
                         ticks: {
-                            font: { family: 'Montserrat', size: 13, weight: '600' },
-                            color: '#003087'
+                            font: { family: 'Montserrat', size: 13, weight: '700' },
+                            color: '#111827'
                         },
                         grid: { display: false }
                     }
@@ -588,11 +588,11 @@
             // Update chart
             pollChart.data.labels = data.poll.options;
             pollChart.data.datasets[0].data = Object.values(data.votes);
-            pollChart.data.datasets[0].backgroundColor = data.poll.options.map((_, i) => 
-                i % 2 === 0 ? '#003087' : '#FFCD00'
+            pollChart.data.datasets[0].backgroundColor = data.poll.options.map((_, i) =>
+                i % 2 === 0 ? '#003087' : '#1a6faf'
             );
-            pollChart.data.datasets[0].borderColor = data.poll.options.map((_, i) => 
-                i % 2 === 0 ? '#003087' : '#e6b800'
+            pollChart.data.datasets[0].borderColor = data.poll.options.map((_, i) =>
+                i % 2 === 0 ? '#002266' : '#155a91'
             );
             pollChart.update();
             
